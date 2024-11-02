@@ -1,73 +1,71 @@
 function myRace(promises) {
-  // implementation
-	return new Promise((resolve, reject) => {
-    promises.forEach((promise) => {
-      promise.then(resolve).catch(reject);
+    return new Promise((resolve, reject) => {
+      promises.forEach(promise => {
+        promise.then(resolve).catch(reject);
+      });
     });
-  });
-}
-
-function myAny(promises) {
-  // implementation
-	return new Promise((resolve, reject) => {
-    promises.forEach((promise) => {
-      promise.then(resolve);
+  }
+  
+  function myAny(promises) {
+    return new Promise((resolve, reject) => {
+      let fulfilled = false;
+      promises.forEach(promise => {
+        promise.then(result => {
+          if (!fulfilled) {
+            fulfilled = true;
+            resolve(result);
+          }
+        }).catch(() => {
+          if (--count == 0) {
+            reject('all promises rejected');
+          }
+        });
+      });
     });
-
-    // If all promises reject, reject with a specific error message
-    setTimeout(() => reject("all promises rejected"), 0);
-  });
-}
-
-function myAll(promises) {
-  // implementation
-	return new Promise((resolve, reject) => {
-    const results = new Array(promises.length);
-    let resolvedCount = 0;
-
-    promises.forEach((promise, index) => {
-      promise
-        .then((value) => {
-          results[index] = value;
-          resolvedCount++;
-
-          if (resolvedCount === promises.length) {
+  }
+  
+  function myAll(promises) {
+    return new Promise((resolve, reject) => {
+      let results = [];
+      let count = promises.length;
+      promises.forEach((promise, index) => {
+        promise.then(result => {
+          results[index] = result;
+          if (--count == 0) {
             resolve(results);
           }
-        })
-        .catch(reject);
+        }).catch(reject);
+      });
     });
-  });
-}
-
-function myAllSettled(promises) {
-  // implementation
-	return new Promise((resolve) => {
-    const results = new Array(promises.length);
-    let settledCount = 0;
-
-    promises.forEach((promise, index) => {
-      promise
-        .then((value) => {
-          results[index] = { status: 'fulfilled', value };
-        })
-        .catch((error) => {
-          results[index] = { status: 'rejected', error };
-        })
-        .finally(() => {
-          settledCount++;
-
-          if (settledCount === promises.length) {
+  }
+  
+  function myAllSettled(promises) {
+    return new Promise((resolve) => {
+      let results = [];
+      let count = promises.length;
+      promises.forEach((promise, index) => {
+        promise.then(result => {
+          results[index] = { status: 'fulfilled', value: result };
+          if (--count == 0) {
+            resolve(results);
+          }
+        }).catch(error => {
+          results[index] = { status: 'rejected', error: error };
+          if (--count == 0) {
             resolve(results);
           }
         });
+      });
     });
-  });
-}
-
-module.exports = {
-  myRace,
-  myAny,
-  myAll,
-  myAllSettled
-};
+  }
+  module.exports = {
+    myRace,
+    myAny,
+    myAll,
+    myAllSettled
+  };
+  
+  
+  
+  
+    
